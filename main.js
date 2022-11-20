@@ -1,8 +1,13 @@
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
+const scoreEl = document.querySelector('#scoreEl');
+const minutesEl = document.querySelector('#minutes');
+const secondsEl = document.querySelector('#seconds');
 
 canvas.width=innerWidth;
 canvas.height=innerHeight;
+
+
 
 class Boundary {
     static width= 40;
@@ -86,6 +91,44 @@ const keys ={
 }
 
 let lastKey = '';
+let score = 0;
+let seconds = 0;
+let minutes = 0;
+// let seconds = 0;
+
+// setInterval(() => {
+//     timeEl.innerText = seconds++;
+// },1000)
+
+setInterval(() => {
+    seconds++;
+    if(seconds <= 9){
+        secondsEl.innerHTML = "0" + seconds;
+    }
+    
+    if (seconds > 9){
+        secondsEl.innerHTML = seconds;
+    }
+  
+    if (seconds > 59) {
+    //   console.log("minutes");
+      minutes++;
+      minutesEl.innerHTML = "0" + minutes;
+      seconds = 0;
+      secondsEl.innerHTML = "0" + 0;
+    }
+    if (minutes > 9){
+      minutesEl.innerHTML = minutes;
+    }
+},1000)
+    
+
+
+
+
+
+
+
 const map=[
     ['1', '-', '-', '-', '-', '-', '-', '-', '-', '-', '2'],
     ['|', '.', '.', '.', '.', '.', '.', '.', '.', '.', '|'],
@@ -385,6 +428,7 @@ function animate(){
         }
     }
 
+    //touching pellet detector
 for (let i= pellets.length - 1; i> 0; i--){
     const pellet = pellets[i];
 
@@ -393,6 +437,8 @@ for (let i= pellets.length - 1; i> 0; i--){
         if (Math.hypot(pellet.position.x - player.position.x, pellet.position.y - player.position.y)< pellet.radius + player.radius){
             // console.log('eat');
             pellets.splice(i,1);
+            score += 10;
+            scoreEl.innerText = score;
         }
 }
 
