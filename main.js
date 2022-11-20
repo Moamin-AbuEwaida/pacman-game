@@ -54,12 +54,6 @@ class Pellet {
         c.fill();
         c.closePath();
     }
-
-    // update(){
-    //     this.draw();
-    //     this.position.x += this.velocity.x;
-    //     this.position.y += this.velocity.y;
-    // }
 };
 
 const pellets = [];
@@ -391,9 +385,18 @@ function animate(){
         }
     }
 
-    pellets.forEach(pellet=>{
-        pellet.draw();
-    })
+for (let i= pellets.length - 1; i> 0; i--){
+    const pellet = pellets[i];
+
+    pellet.draw();
+
+        if (Math.hypot(pellet.position.x - player.position.x, pellet.position.y - player.position.y)< pellet.radius + player.radius){
+            // console.log('eat');
+            pellets.splice(i,1);
+        }
+}
+
+ 
 
     boundaries.forEach(boundary=>{
         boundary.draw();
@@ -404,16 +407,12 @@ function animate(){
             rectangle: boundary
             })
         ) {
-                console.log("collision is happening")
+                // console.log("collision is happening")
                 player.velocity.x = 0;
                 player.velocity.y = 0;
             }
     });
     player.update();
-    // player.velocity.x = 0;
-    // player.velocity.y = 0;
-
-  
 };
 
 animate()
