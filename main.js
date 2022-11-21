@@ -137,7 +137,7 @@ let minutes = 0;
 //     timeEl.innerText = seconds++;
 // },1000)
 
-setInterval(() => {
+let counter = setInterval(() => {
     seconds++;
     if(seconds <= 9){
         secondsEl.innerHTML = "0" + seconds;
@@ -381,8 +381,10 @@ function circleCollidesWithRectangle({circle, rectangle}){
             ) 
 };
 
+let animationId;
+
 function animate(){
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
     c.clearRect(0,0,canvas.width, canvas.height);
     if(keys.w.pressed && lastKey === 'w'){
         for (let i =0; i<boundaries.length; i++){
@@ -499,6 +501,12 @@ for (let i= pellets.length - 1; i> 0; i--){
     player.update();
     ghosts.forEach(ghost=>{
         ghost.update();
+            if (Math.hypot(ghost.position.x - player.position.x, ghost.position.y - player.position.y)< ghost.radius + player.radius){
+                cancelAnimationFrame(animationId);
+                console.log('you lose :P ');
+                clearInterval(counter);
+            }
+
 
         const collisions = [];
         boundaries.forEach(boundary=>{
