@@ -525,8 +525,15 @@ for (let i = ghosts.length-1; i >= 0; i--){
                     clearInterval(counter);
                 }
             }
-}
+};
 
+
+// winning condition
+if (pellets.length === 0){
+    console.log('you won')
+    cancelAnimationFrame(animationId);
+    clearInterval(counter);
+}
 // powerUps
 for (let i= powerUps.length - 1; i >= 0; i--){
     const powerUp = powerUps[i];
