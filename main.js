@@ -30,20 +30,32 @@ class Player {
         this.position = position;
         this.velocity = velocity;
         this.radius = 15;
+        this.radians = .75;
+        this.openRate = .12;
+        this.rotation = 0;
     }
 
     draw(){
+        c.save();
+        c.translate(this.position.x, this.position.y);
+        c.rotate(this.rotation);
+        c.translate(-this.position.x, -this.position.y);
         c.beginPath();
-        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+        c.arc(this.position.x, this.position.y, this.radius, this.radians, Math.PI * 2 - this.radians);
+        c.lineTo(this.position.x, this.position.y);
         c.fillStyle = 'yellow';
         c.fill();
         c.closePath();
+        c.restore();
     }
 
     update(){
         this.draw();
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
+
+        if(this.radians < 0 || this.radians > .75) this.openRate = -this.openRate
+        this.radians += this.openRate;
     }
 };
 
@@ -547,6 +559,9 @@ for (let i= powerUps.length - 1; i >= 0; i--){
         // ghosts get scared
         ghosts.forEach(ghost=>{
             ghost.scared = true;
+            ghost.velocity.x = -ghost.velocity.x;
+            ghost.velocity.y = -ghost.velocity.y;
+
             console.log(ghost.scared)
 
             setTimeout(()=>{
@@ -593,13 +608,7 @@ for (let i= pellets.length - 1; i >= 0; i--){
     player.update();
     ghosts.forEach(ghost=>{
         ghost.update();
-            // if (Math.hypot(ghost.position.x - player.position.x, ghost.position.y - player.position.y)< ghost.radius + player.radius && !ghost.scared){
-            //     cancelAnimationFrame(animationId);
-            //     console.log('you lose :P ');
-            //     clearInterval(counter);
-            // }
-
-
+    
         const collisions = [];
         boundaries.forEach(boundary=>{
             if (!collisions.includes('right') && circleCollidesWithRectangle({
@@ -659,9 +668,6 @@ for (let i= pellets.length - 1; i >= 0; i--){
             ghost.prevCollisions =  collisions;
         }
             if (JSON.stringify(collisions) !== JSON.stringify(ghost.prevCollisions)){
-                // console.log('no');
-                // console.log(collisions)
-                // console.log(ghost.prevCollisions)
                 if (ghost.velocity.x > 0) ghost.prevCollisions.push('right')
                 else if (ghost.velocity.x < 0) ghost.prevCollisions.push('left')
                 else if (ghost.velocity.y < 0) ghost.prevCollisions.push('up')
@@ -670,9 +676,7 @@ for (let i= pellets.length - 1; i >= 0; i--){
                 const pathways = ghost.prevCollisions.filter((collision) =>{
                     return !collisions.includes(collision)
                 })
-                // console.log({pathways})
                 const direction = pathways[Math.floor(Math.random() * pathways.length)]
-                // console.log({direction})
                 switch (direction) {
                     case 'down':
                         ghost.velocity.y = ghost.speed;
@@ -694,6 +698,11 @@ for (let i= pellets.length - 1; i >= 0; i--){
                 ghost.prevCollisions = [];
             }
     })
+    //changing pacman mouth direction
+    if (player.velocity.x > 0) player.rotation = 0
+    else if (player.velocity.x < 0) player.rotation = Math.PI
+    else if (player.velocity.y > 0) player.rotation = Math.PI / 2
+    else if (player.velocity.y < 0) player.rotation = Math.PI * 1.5
 };
 
 animate()
