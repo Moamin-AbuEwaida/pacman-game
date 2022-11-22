@@ -55,13 +55,14 @@ class Ghost {
         this.radius = 15;
         this.color = color;
         this.prevCollisions = [];
-        this.speed = 2
+        this.speed = 2;
+        this.scared = false;
     }
 
     draw(){
         c.beginPath();
         c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
-        c.fillStyle = this.color;
+        c.fillStyle = this.scared ? 'blue' : this.color;
         c.fill();
         c.closePath();
     }
@@ -87,8 +88,24 @@ class Pellet {
     }
 };
 
+class PowerUp {
+    constructor({position}){
+        this.position = position;
+        this.radius = 8;
+    }
+
+    draw(){
+        c.beginPath();
+        c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+        c.fillStyle = 'white';
+        c.fill();
+        c.closePath();
+    }
+};
+
 const pellets = [];
 const boundaries = [];
+const powerUps = [];
 const ghosts = [
     new Ghost({
         position:{
@@ -99,6 +116,17 @@ const ghosts = [
             x: Ghost.speed,
             y:0
         }
+    }),
+    new Ghost({
+        position:{
+            x: Boundary.width * 6 + Boundary.width/2,
+            y: Boundary.height * 3 + Boundary.height/2
+        },
+        velocity:{
+            x: Ghost.speed,
+            y:0
+        },
+        color: 'pink'
     })
 ];
 const player = new Player({
@@ -178,7 +206,7 @@ const map=[
     ['|', '.', '[', ']', '.', '.', '.', '[', ']', '.', '|'],
     ['|', '.', '.', '.', '.', '^', '.', '.', '.', '.', '|'],
     ['|', '.', 'b', '.', '[', '5', ']', '.', 'b', '.', '|'],
-    ['|', '.', '.', '.', '.', '.', '.', '.', '.', '.', '|'],
+    ['|', '.', '.', '.', '.', '.', '.', '.', '.', 'p', '|'],
     ['4', '-', '-', '-', '-', '-', '-', '-', '-', '-', '3']
 ];
 
@@ -367,6 +395,16 @@ map.forEach((row, i)=>{
           })
         )
         break
+      case 'p':
+        powerUps.push(
+          new PowerUp({
+            position: {
+              x: j * Boundary.width + Boundary.width / 2,
+              y: i * Boundary.height + Boundary.height / 2
+            }
+          })
+        )
+        break
         }
     })
 });
@@ -468,8 +506,53 @@ function animate(){
         }
     }
 
+// detect collision between ghosts and player
+for (let i = ghosts.length-1; i >= 0; i--){
+    const ghost = ghosts[i];
+    // ghost touches the player
+    if (
+        Math.hypot(
+            ghost.position.x - player.position.x, 
+            ghost.position.y - player.position.y
+            )< 
+            ghost.radius + player.radius)
+            {
+                if (ghost.scared){
+                    ghosts.splice(i, 1);
+                } else {
+                    cancelAnimationFrame(animationId);
+                    console.log('you lose :P ');
+                    clearInterval(counter);
+                }
+            }
+}
+
+// powerUps
+for (let i= powerUps.length - 1; i >= 0; i--){
+    const powerUp = powerUps[i];
+    powerUp.draw();
+
+    // player collides with powerup
+    if (Math.hypot(powerUp.position.x - player.position.x, powerUp.position.y - player.position.y)< powerUp.radius + player.radius){
+        powerUps.splice(i,1);
+        score += 20;
+        scoreEl.innerText = score;
+        // ghosts get scared
+        ghosts.forEach(ghost=>{
+            ghost.scared = true;
+            console.log(ghost.scared)
+
+            setTimeout(()=>{
+                ghost.scared = false;
+                console.log(ghost.scared)
+            },5000)
+        });
+    }
+}
+
+
     //touching pellet detector
-for (let i= pellets.length - 1; i> 0; i--){
+for (let i= pellets.length - 1; i >= 0; i--){
     const pellet = pellets[i];
 
     pellet.draw();
@@ -479,6 +562,8 @@ for (let i= pellets.length - 1; i> 0; i--){
             pellets.splice(i,1);
             score += 10;
             scoreEl.innerText = score;
+            
+            
         }
 }
 
@@ -501,11 +586,11 @@ for (let i= pellets.length - 1; i> 0; i--){
     player.update();
     ghosts.forEach(ghost=>{
         ghost.update();
-            if (Math.hypot(ghost.position.x - player.position.x, ghost.position.y - player.position.y)< ghost.radius + player.radius){
-                cancelAnimationFrame(animationId);
-                console.log('you lose :P ');
-                clearInterval(counter);
-            }
+            // if (Math.hypot(ghost.position.x - player.position.x, ghost.position.y - player.position.y)< ghost.radius + player.radius && !ghost.scared){
+            //     cancelAnimationFrame(animationId);
+            //     console.log('you lose :P ');
+            //     clearInterval(counter);
+            // }
 
 
         const collisions = [];
